@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produkty — Saveria</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fffaf8;
+      color: #493b3b;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      background: #f8e8e5;
+      padding: 18px 5%;
+      border-bottom: 1px solid #efd8d2;
+    }
+    .nav {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    a { color: inherit; text-decoration: none; }
+    .brand { font-weight: bold; font-size: 22px; }
+    .navlinks { display: flex; gap: 16px; flex-wrap: wrap; }
+    main { max-width: 1100px; margin: 35px auto; padding: 0 18px; }
+    h1 { color: #805b63; }
+    .filters { display: flex; gap: 10px; margin: 22px 0; flex-wrap: wrap; }
+    button {
+      cursor: pointer;
+      border: 1px solid #dfb9b6;
+      background: #fff;
+      color: #68474d;
+      padding: 10px 15px;
+      border-radius: 20px;
+    }
+    button.active, .add {
+      background: #d9a9ad;
+      color: white;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .product {
+      background: white;
+      border: 1px solid #f0dfda;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .product-art {
+      height: 200px;
+      background: #f8ece8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+    }
+    .product-art img { width: 100%; height: 100%; object-fit: cover; }
+    .product-body { padding: 16px; }
+    .tag { font-size: 12px; color: #966b72; }
+    .price { font-size: 20px; font-weight: bold; margin: 12px 0; }
+    .stock-info { font-size: 13px; color: #796c6c; }
+    .add { width: 100%; border: 0; }
+    .add:disabled { background: #ddd; color: #777; cursor: not-allowed; }
+    #message { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <a class="brand" href="index.html">Saveria ♥</a>
+      <nav class="navlinks">
+        <a href="index.html">Strona główna</a>
+        <a href="produkty.html">Produkty</a>
+        <a href="koszyk.html">Koszyk 🛍️</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Nasze produkty 🌸</h1>
+    <p>Wybierz swoje ulubione rzeczy.</p>
+
+    <div class="filters">
+      <button class="filter active" data-filter="all">Wszystkie</button>
+      <button class="filter" data-filter="physical">Fizyczne</button>
+      <button class="filter" data-filter="digital">Cyfrowe PDF</button>
+    </div>
+
+    <p id="message">Ładowanie produktów…</p>
+    <div class="products" id="products"></div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      "https://mzshkdilydgmxjtyowdh.supabase.co",
+      "sb_publishable_x7NU2M5TvynbEwec4gLQSw_j_MQpxF5"
+    );
+
+    const CART_KEY = "saveriaCart";
+    let products = [];
+    let activeFilter = "all";
+
+    const money = value => new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN"
+    }).format(value);
+
+    function addToCart(id) {
+      let cart;
+      try {
+        cart = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+        if (!Array.isArray(cart)) cart = [];
+      } catch {
+        cart = [];
+      }
+
+      const item = cart.find(item => item.id === id);
+      if (item) item.qty += 1;
+      else cart.push({ id, qty: 1 });
+
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      document.querySelector("#message").textContent =
+        "Dodano produkt do koszyka 💗";
+    }
+
+    function renderProducts() {
+      const list = products.filter(p =>
+        activeFilter === "all" ||
+        (activeFilter === "physical"
+          ? p.type === "physical"
+          : p.type === "digital")
+      );
+
+      document.querySelector("#products").innerHTML = list.map(p => {
+        const stock = Number(p.stock_quantity ?? 0);
+        const isDigital = p.type === "digital";
+        const soldOut = !isDigital && (!Number.isFinite(stock) || stock <= 0);
+console.log("Produkt:", p.name, "| Stan:", stock, "| Cyfrowy:", isDigital, "| Brak:", soldOut);
+        return `
+          <article class="product">
+            <div class="product-art">
+              ${p.image_url
+                ? `<img src="${p.image_url}" alt="${p.name}">`
+                : (p.emoji || "🌸")}
+            </div>
+            <div class="product-body">
+              <h3>${p.name}</h3>
+              <span class="tag">${isDigital ? "Cyfrowy PDF" : "Fizyczny"}</span>
+              <p>${p.description || ""}</p>
+              <div class="price">${money(p.price)}</div>
+              <p class="stock-info">
+                ${isDigital ? "Dostępny jako PDF" :
+                  soldOut ? "Brak w magazynie" : `Dostępne sztuki: ${stock}`}
+              </p>
+              <button class="add" data-add="${p.id}" ${soldOut ? "disabled" : ""}>
+                ${soldOut ? "Brak w magazynie" : "＋ Dodaj do koszyka"}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      if (!list.length) {
+        document.querySelector("#products").textContent =
+          "Brak produktów w tej kategorii.";
+      }
+    }
+
+    document.addEventListener("click", event => {
+      const filter = event.target.closest("[data-filter]");
+      if (filter) {
+        activeFilter = filter.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach(button => {
+          button.classList.toggle("active", button === filter);
+        });
+        renderProducts();
+        return;
+      }
+
+      const add = event.target.closest("[data-add]");
+      if (add) addToCart(add.dataset.add);
+    });
+
+    async function loadProducts() {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        document.querySelector("#message").textContent =
+          "Nie udało się pobrać produktów. Sprawdź połączenie z Supabase.";
+        console.error(error);
+        return;
+      }
+
+      products = (data || []).map(p => ({
+        ...p,
+        type: p.type || "physical"
+      }));
+
+      document.querySelector("#message").textContent = "";
+      renderProducts();
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zamówienie | Saveria</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      background: #fff8f6;
+      color: #594747;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    h1, h2 { color: #9b6c73; }
+
+    h1 { text-align: center; }
+
+    section {
+      background: white;
+      border: 1px solid #f0dedb;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 7px;
+    }
+
+    input:not([type="radio"]) {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e6ceca;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input[type="radio"] { accent-color: #bc8992; }
+
+    .delivery-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .product-row, .total-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+    }
+
+    .product-row { border-bottom: 1px solid #f0e5e2; }
+
+    .grand-total {
+      font-size: 20px;
+      font-weight: bold;
+      color: #9b6c73;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: #bc8992;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn:disabled { opacity: 0.6; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin: 20px 0;
+      color: #9b6c73;
+    }
+
+    #message { overflow-wrap: anywhere; }
+
+    .muted {
+      color: #8a7777;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Twoje zamówienie 🌸</h1>
+
+    <section>
+      <h2>Podsumowanie koszyka</h2>
+      <div id="summary">Wczytuję produkty…</div>
+
+      <div class="total-row">
+        <span>Produkty</span>
+        <strong id="subtotal">—</strong>
+      </div>
+
+      <div class="total-row">
+        <span>Dostawa</span>
+        <strong id="shippingCost">—</strong>
+      </div>
+
+      <div class="total-row grand-total">
+        <span>Razem</span>
+        <strong id="grandTotal">—</strong>
+      </div>
+    </section>
+
+    <section>
+      <h2>Dane do zamówienia</h2>
+
+      <form id="orderForm">
+        <label for="name">Imię i nazwisko</label>
+        <input id="name" name="name" autocomplete="name" required>
+
+        <label for="email">Adres e-mail</label>
+        <input id="email" name="email" type="email" required>
+
+        <label for="phone">Numer telefonu</label>
+        <input id="phone" name="phone" type="tel" required>
+
+        <h2>Sposób dostawy</h2>
+
+        <label class="delivery-option">
+          <input type="radio" name="delivery" value="locker" checked>
+          Punkt odbioru — 16 zł
+        </label>
+
+        <label class="delivery-option">
+          <input type="radio" name="delivery" value="courier">
+          Kurier — 19 zł
+        </label>
+
+        <div id="lockerFields">
+          <label for="locker">Nazwa lub adres punktu odbioru</label>
+          <input id="locker" name="locker">
+        </div>
+
+        <div id="addressFields">
+          <label for="address">Ulica i numer domu</label>
+          <input id="address" name="address">
+
+          <label for="postcode">Kod pocztowy</label>
+          <input id="postcode" name="postcode">
+
+          <label for="city">Miasto</label>
+          <input id="city" name="city">
+        </div>
+
+        <button class="btn" id="submitButton" type="submit">
+          Przejdź do płatności
+        </button>
+      </form>
+
+      <p id="message" role="status"></p>
+    </section>
+
+    <a class="back-link" href="koszyk.html">← Wróć do koszyka</a>
+  </main>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  const SUPABASE_URL = "https://mzshkdilydgmxjtyowdh.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_x7NU2M5TvynbEwec4gLQSw_j_MQpxF5";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  const CART_KEY = "saveriaCart";
+  const money = value => new Intl.NumberFormat("pl-PL", {
+    style: "currency",
+    currency: "PLN"
+  }).format(value);
+
+  const form = document.querySelector("#orderForm");
+  const message = document.querySelector("#message");
+  const button = document.querySelector("#submitButton");
+
+  let cart = [];
+  let products = [];
+
+  try {
+    cart = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    if (!Array.isArray(cart)) cart = [];
+  } catch {
+    cart = [];
+  }
+
+  function cartProducts() {
+    return cart.map(item => {
+      const product = products.find(p => p.id === item.id);
+      return product ? { ...product, qty: Number(item.qty) } : null;
+    }).filter(Boolean);
+  }
+
+  function hasPhysical() {
+    return cartProducts().some(p => (p.type || "physical") === "physical");
+  }
+
+  function shippingCost() {
+    if (!hasPhysical()) return 0;
+    return form.querySelector('input[name="delivery"]:checked')?.value === "locker"
+      ? 16 : 19;
+  }
+
+  function renderSummary() {
+    const items = cartProducts();
+    const summary = document.querySelector("#summary");
+
+    if (!items.length) {
+      summary.textContent = "Koszyk jest pusty.";
+      button.disabled = true;
+    } else {
+      button.disabled = false;
+      summary.innerHTML = items.map(p => `
+        <div class="product-row">
+          <span>${escapeHtml(p.name)} × ${p.qty}</span>
+          <strong>${money(Number(p.price) * p.qty)}</strong>
+        </div>
+      `).join("");
+    }
+
+    const subtotal = items.reduce(
+      (sum, p) => sum + Number(p.price) * p.qty, 0
+    );
+
+    document.querySelector("#subtotal").textContent = money(subtotal);
+    document.querySelector("#shippingCost").textContent = money(shippingCost());
+    document.querySelector("#grandTotal").textContent =
+      money(subtotal + shippingCost());
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
+
+  function updateDeliveryFields() {
+    const physical = hasPhysical();
+    const selected = form.querySelector('input[name="delivery"]:checked')?.value;
+
+    document.querySelector("#lockerFields").style.display =
+      physical && selected === "locker" ? "block" : "none";
+
+    document.querySelector("#addressFields").style.display =
+      physical && selected === "courier" ? "block" : "none";
+
+    renderSummary();
+  }
+
+  form.querySelectorAll('input[name="delivery"]').forEach(input => {
+    input.addEventListener("change", updateDeliveryFields);
+  });
+
+  async function loadSummary() {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, price, type, active")
+      .eq("active", true);
+
+    if (error) {
+      console.error(error);
+      message.textContent = "Nie udało się wczytać produktów.";
+      button.disabled = true;
+      return;
+    }
+
+    products = data || [];
+    renderSummary();
+    updateDeliveryFields();
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    message.textContent = "";
+
+    if (!cart.length || cartProducts().length !== cart.length) {
+      message.textContent = "Koszyk jest pusty lub zawiera niedostępny produkt.";
+      return;
+    }
+
+    const items = cart.map(item => ({
+      id: item.id,
+      quantity: Number(item.qty)
+    }));
+
+    if (items.some(item =>
+      !Number.isInteger(item.quantity) || item.quantity < 1
+    )) {
+      message.textContent = "Nieprawidłowa ilość produktu w koszyku.";
+      return;
+    }
+
+    const physical = hasPhysical();
+    const delivery = physical
+      ? form.querySelector('input[name="delivery"]:checked')?.value
+      : "digital";
+
+    const locker = document.querySelector("#locker").value.trim();
+    const address = document.querySelector("#address").value.trim();
+    const postcode = document.querySelector("#postcode").value.trim();
+    const city = document.querySelector("#city").value.trim();
+
+    if (physical && delivery === "locker" && !locker) {
+      message.textContent = "Wpisz nazwę lub adres punktu odbioru.";
+      return;
+    }
+
+    if (physical && delivery === "courier" &&
+        (!address || !postcode || !city)) {
+      message.textContent = "Uzupełnij adres, kod pocztowy i miasto.";
+      return;
+    }
+
+    const payload = {
+      customer: {
+        name: document.querySelector("#name").value.trim(),
+        email: document.querySelector("#email").value.trim(),
+        phone: document.querySelector("#phone").value.trim()
+      },
+      deliveryMethod: delivery,
+      pickupPoint: physical && delivery === "locker" ? locker : "",
+      deliveryAddress: physical && delivery === "courier" ? address : "",
+      deliveryPostcode: physical && delivery === "courier" ? postcode : "",
+      deliveryCity: physical && delivery === "courier" ? city : "",
+      discountCode: "",
+      items
+    };
+
+    button.disabled = true;
+    message.textContent = "Tworzę zamówienie…";
+
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+      };
+
+      const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/create-order`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload)
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.orderNumber) {
+        throw new Error(result.error || "Nie udało się utworzyć zamówienia.");
+      }
+
+      message.textContent = "Przekierowuję do płatności…";
+
+      const paymentResponse = await fetch(
+        `${SUPABASE_URL}/functions/v1/create-checkout-session`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            orderNumber: result.orderNumber,
+            email: payload.customer.email
+          })
+        }
+      );
+
+      const paymentResult = await paymentResponse.json();
+
+      if (!paymentResponse.ok || !paymentResult.checkoutUrl) {
+        throw new Error(
+          paymentResult.error || "Nie udało się uruchomić płatności."
+        );
+      }
+
+      window.location.href = paymentResult.checkoutUrl;
+    } catch (error) {
+      console.error("Błąd zamówienia:", error);
+      message.textContent = error.message || "Wystąpił błąd.";
+      button.disabled = false;
+    }
+  });
+
+  loadSummary();
+</script>
+</body>
+</html>

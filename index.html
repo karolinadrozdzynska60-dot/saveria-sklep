@@ -1,0 +1,711 @@
+
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fbf1ee">
+  <title>Saveria — piękne rzeczy na co dzień</title>
+  <style>
+    :root {
+      --pink: #c9758e;
+      --pink-dark: #a94f6b;
+      --pink-light: #f9e8ec;
+      --cream: #fffaf7;
+      --ink: #443239;
+      --muted: #887980;
+      --border: #eee0dc;
+      --shadow: 0 8px 28px #7a4b5510;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .wrap { width: min(1180px, 94%); margin: auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: #fffaf7f2; backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      min-height: 76px; display: flex; align-items: center;
+      justify-content: space-between; gap: 20px;
+    }
+    .brand { text-decoration: none; line-height: 1; }
+    .brand-name { font: italic 38px Georgia, serif; color: var(--pink-dark); }
+    .brand-sub { display: block; margin-top: 5px; font: italic 12px Georgia, serif; }
+    .navlinks { display: flex; gap: 22px; align-items: center; }
+    .navlinks a { text-decoration: none; color: var(--muted); font-size: 13px; }
+    .cart-pill {
+      border: 1px solid var(--border); background: white;
+      border-radius: 999px; padding: 11px 15px; font-weight: 700; color: var(--ink);
+    }
+    .hero {
+      margin: 22px auto 28px; border-radius: 20px;
+      background: linear-gradient(115deg, #f3dfd9, #f9e9e5 56%, #edd4cd);
+      min-height: 205px; display: flex; align-items: center;
+      justify-content: space-between; padding: 32px clamp(22px, 6vw, 78px);
+    }
+    .hero h1 { font: italic clamp(30px, 4vw, 46px) Georgia, serif; margin: 0 0 12px; }
+    .hero p { color: #765d62; max-width: 470px; line-height: 1.7; margin: 0; }
+    .hero-mark { font: italic 96px Georgia, serif; color: #fffaf799; }
+    .section-title { font: 26px Georgia, serif; margin: 28px 0 8px; }
+    .subtle { color: var(--muted); font-size: 14px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 26px; align-items: start; }
+    .filters { display: flex; gap: 9px; flex-wrap: wrap; margin: 16px 0; }
+    .filter {
+      border: 1px solid var(--border); background: white; color: var(--muted);
+      border-radius: 999px; padding: 9px 16px;
+    }
+    .filter.active { background: var(--pink); border-color: var(--pink); color: white; }
+    .products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .product {
+      border: 1px solid var(--border); background: white;
+      border-radius: 15px; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .product-art {
+      min-height: 140px; display: grid; place-items: center;
+      background: linear-gradient(145deg, #f4dfd9, #f9eee7); font-size: 62px;
+    }
+    .product-body { padding: 13px; }
+    .tag {
+      display: inline-block; padding: 4px 8px; border-radius: 999px;
+      background: var(--pink-light); color: var(--pink-dark); font-size: 11px; margin: 7px 0;
+    }
+    .product h3 { font-size: 14px; line-height: 1.4; margin: 0; }
+    .product p { font-size: 12px; color: var(--muted); min-height: 32px; line-height: 1.5; }
+    .price { font-weight: 800; margin: 8px 0 12px; }
+    .btn {
+      border: 0; border-radius: 9px; background: var(--pink); color: white;
+      padding: 11px 15px; font-weight: 700;
+    }
+    .btn:hover { background: var(--pink-dark); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn.full { width: 100%; }
+    .panel {
+      border: 1px solid var(--border); background: white; border-radius: 16px;
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .panel h2 { font: 23px Georgia, serif; margin: 0 0 16px; }
+    .cart-panel { position: sticky; top: 96px; }
+    .cart-items { display: grid; gap: 15px; }
+    .cart-item { display: grid; grid-template-columns: 48px 1fr; gap: 11px; }
+    .mini-art {
+      height: 48px; display: grid; place-items: center;
+      background: var(--pink-light); border-radius: 10px; font-size: 25px;
+    }
+    .cart-item h4 { margin: 0 0 4px; font-size: 13px; }
+    .cart-item small { color: var(--muted); }
+    .qty { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .qty button {
+      width: 27px; height: 27px; border: 1px solid var(--border);
+      border-radius: 7px; background: white;
+    }
+    .remove { float: right; border: 0; background: transparent; color: var(--pink-dark); }
+    .summary { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 15px; }
+    .sumrow { display: flex; justify-content: space-between; gap: 12px; margin: 11px 0; font-size: 14px; }
+    .sumrow.total { background: #fff0f2; padding: 14px; border-radius: 10px; font-weight: 800; font-size: 17px; }
+    .notice { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 14px; }
+    .checkout { margin: 34px 0; }
+    .checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .field { display: grid; gap: 6px; margin: 12px 0; }
+    .field label { font-size: 13px; font-weight: 650; }
+    .field input, .field select, .field textarea {
+      width: 100%; min-width: 0; border: 1px solid var(--border);
+      background: #fffdfc; padding: 12px; border-radius: 9px; color: var(--ink);
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: 2px solid #e7a7b9; border-color: transparent;
+    }
+    .delivery-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .delivery-option {
+      display: block; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; cursor: pointer;
+    }
+    .delivery-option:has(input:checked) { border-color: var(--pink); background: #fff5f6; }
+    .delivery-option input { accent-color: var(--pink); }
+    .delivery-option strong { display: block; margin: 8px 0 4px; }
+    .delivery-option small { color: var(--muted); line-height: 1.5; }
+    .hidden { display: none !important; }
+    .empty { padding: 22px 0; text-align: center; color: var(--muted); }
+    .status {
+      display: none; padding: 13px; margin-top: 14px; border-radius: 10px;
+      background: #f0f8ef; color: #32683d; font-size: 14px; line-height: 1.5;
+    }
+    .status.error { background: #fff0f0; color: #9c3434; }
+    footer { background: #f8ebe7; margin-top: 35px; padding: 30px 0; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    footer p { color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .cart-panel { position: static; }
+      .products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .navlinks { display: none; }
+    }
+    @media (max-width: 560px) {
+      .hero { min-height: 180px; padding: 24px; }
+      .hero-mark { display: none; }
+      .products { gap: 9px; }
+      .product-art { min-height: 105px; font-size: 46px; }
+      .product-body { padding: 10px; }
+      .product h3 { font-size: 13px; }
+      .checkout-grid { grid-template-columns: 1fr; }
+      .delivery-options { grid-template-columns: 1fr; }
+      .panel { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <span class="brand-name">Saveria ♥</span>
+      <span class="brand-sub">Piękne rzeczy na co dzień</span>
+    </a>
+    <nav class="navlinks">
+      <a href="index.html">Strona główna</a>
+      <a href="produkty.html">Sklep</a>
+      <a href="#about">O nas</a>
+      <a href="#checkout">Dostawa</a>
+    </nav>
+    <button class="cart-pill" id="jumpCart" type="button">🛍️ Koszyk (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" id="home">
+    <div>
+      <h1>Małe rzeczy,<br>które tworzą wielkie chwile</h1>
+      <p>Piękne dodatki, papiernicze drobiazgi i cyfrowe inspiracje stworzone z myślą o Tobie.</p>
+    </div>
+    <div class="hero-mark" aria-hidden="true">♡</div>
+  </section>
+
+  <div class="layout">
+    <section id="shop">
+      <h2 class="section-title">Nasze produkty</h2>
+      <p class="subtle">Wybierz swoje ulubione rzeczy.</p>
+      <div class="filters">
+        <button class="filter active" data-filter="all" type="button">Wszystkie</button>
+        <button class="filter" data-filter="physical" type="button">Fizyczne</button>
+        <button class="filter" data-filter="digital" type="button">Cyfrowe PDF</button>
+      </div>
+      <div class="products" id="products"></div>
+    </section>
+
+    <aside class="panel cart-panel" id="cartPanel">
+      <h2>Twój koszyk (<span id="cartTitleCount">0</span>)</h2>
+      <div id="cartItems" class="cart-items"></div>
+      <div class="summary">
+        <div class="sumrow"><span>Wartość produktów</span><strong id="subtotal">0,00 zł</strong></div>
+        <div class="sumrow"><span>Dostawa</span><strong id="shipping">0,00 zł</strong></div>
+        <div class="sumrow total"><span>Do zapłaty</span><span id="total">0,00 zł</span></div>
+        <button id="goCheckout" class="btn full" type="button">Przejdź do dostawy →</button>
+        <p class="notice">Kurier kosztuje 19 zł, paczkomat 16 zł. Produkty cyfrowe nie wymagają wysyłki.</p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="checkout" id="checkout">
+    <h2 class="section-title">Dostawa i dane zamawiającego</h2>
+    <p class="subtle">Uzupełnij dane, aby przygotować zamówienie.</p>
+    <form id="checkoutForm" class="panel">
+      <div class="checkout-grid">
+        <div>
+          <h3>1. Wybierz sposób dostawy</h3>
+          <div class="delivery-options">
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="courier" checked>
+              <strong>🚚 Kurier</strong>
+              <small>Dostawa pod wskazany adres. 19,00 zł</small>
+            </label>
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="locker">
+              <strong>▦ Paczkomat</strong>
+              <small>Odbiór w wybranym punkcie. 16,00 zł</small>
+            </label>
+          </div>
+          <div class="field hidden" id="lockerField">
+            <label for="locker">Nazwa lub adres paczkomatu *</label>
+            <input id="locker" name="locker" placeholder="Np. kod punktu lub adres">
+            <small class="subtle">Punkt wpisujesz ręcznie; mapa może zostać dodana później.</small>
+          </div>
+          <div id="addressFields">
+            <h3>2. Adres dostawy</h3>
+            <div class="field">
+              <label for="address">Ulica i numer *</label>
+              <input id="address" name="address" autocomplete="street-address" placeholder="Np. Kwiatowa 12">
+            </div>
+            <div class="checkout-grid">
+              <div class="field">
+                <label for="postcode">Kod pocztowy *</label>
+                <input id="postcode" name="postcode" autocomplete="postal-code" placeholder="00-000">
+              </div>
+              <div class="field">
+                <label for="city">Miasto *</label>
+                <input id="city" name="city" autocomplete="address-level2" placeholder="Np. Warszawa">
+              </div>
+            </div>
+          </div>
+          <p class="notice">Przy zamówieniu wyłącznie produktów cyfrowych dostawa jest bezpłatna.</p>
+        </div>
+        <div>
+
+<div class="field">
+  <label for="discountCode">Kod rabatowy</label>
+  <input
+    id="discountCode"
+    name="discountCode"
+    type="text"
+    autocomplete="off"
+    placeholder="Wpisz kod, np. TEST15"
+  >
+  <small>Jeśli masz kod rabatowy, wpisz go tutaj.</small>
+</div>
+
+          <h3>3. Dane zamawiającego</h3>
+          <div class="field">
+            <label for="customerName">Imię i nazwisko *</label>
+            <input id="customerName" name="customerName" required autocomplete="name" placeholder="Anna Kowalska">
+          </div>
+          <div class="field">
+            <label for="email">Adres e-mail *</label>
+            <input id="email" name="email" required type="email" autocomplete="email" placeholder="anna@example.com">
+          </div>
+          <div class="field">
+            <label for="phone">Telefon (opcjonalnie)</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="123 456 789">
+          </div>
+          <div class="field">
+            <label for="notes">Uwagi (opcjonalnie)</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="Dodatkowe informacje"></textarea>
+          </div>
+          <div class="summary">
+            <div class="sumrow"><span>Produkty</span><strong id="checkoutSubtotal">0,00 zł</strong></div>
+            <div class="sumrow"><span>Dostawa</span><strong id="checkoutShipping">0,00 zł</strong></div>
+            <div class="sumrow total"><span>Razem</span><span id="checkoutTotal">0,00 zł</span></div>
+            <button class="btn full" type="submit">Przejdź do płatności</button>
+            <p class="notice">To wersja demonstracyjna: zamówienie nie jest jeszcze wysyłane do sprzedawcy i nie pobieramy płatności.</p>
+            <div id="status" class="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section id="about">
+    <h2 class="section-title">Piękne rzeczy na co dzień</h2>
+    <p class="subtle">Saveria — miejsce na drobiazgi, które poprawiają nastrój. ♡</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>
+      <div class="brand-name">Saveria ♥</div>
+      <p>Piękne rzeczy na co dzień</p>
+    </div>
+    <div>
+      <a href="#shop">Sklep</a> · <a href="#about">O nas</a> · <a href="#checkout">Dostawa</a>
+      <p>Przed uruchomieniem sprzedaży dodaj regulamin i politykę prywatności.</p>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+
+const SUPABASE_URL = "https://mzshkdilydgmxjtyowdh.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_x7NU2M5TvynbEwec4gLQSw_j_MQpxF5";
+
+  const SHIPPING_FEES = { locker : 16, courier: 19 };
+  const CART_KEY = "saveriaCart";
+
+let products = [];
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabase = createClient(
+  "https://mzshkdilydgmxjtyowdh.supabase.co",
+  "sb_publishable_x7NU2M5TvynbEwec4gLQSw_j_MQpxF5"
+);
+  const money = value => new Intl.NumberFormat("pl-PL", {
+    style: "currency", currency: "PLN"
+  }).format(value);
+
+  function readCart() {
+    try {
+      const value = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+      return Array.isArray(value) ? value.filter(item =>
+        products.some(p => p.id === item.id) &&
+        Number.isInteger(item.qty) && item.qty > 0
+      ) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  let cart = readCart();
+  let activeFilter = "all";
+
+  function saveCart() {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  }
+
+  function productById(id) {
+    return products.find(p => p.id === id);
+  }
+
+  function subtotal() {
+    return cart.reduce((sum, item) => {
+      const p = productById(item.id);
+      return sum + (p ? p.price * item.qty : 0);
+    }, 0);
+  }
+
+  function hasPhysical() {
+    return cart.some(item => {
+      const p = productById(item.id);
+      return p && p.type === "physical";
+    });
+  }
+
+  function selectedDelivery() {
+    return document.querySelector('input[name="delivery"]:checked')?.value || "courier";
+  }
+
+  function shippingCost() {
+    if (!hasPhysical()) return 0;
+    return SHIPPING_FEES[selectedDelivery()];
+  }
+
+  function itemCount() {
+    return cart.reduce((sum, item) => sum + item.qty, 0);
+  }
+
+  
+
+function renderProducts() {
+  const list = products.filter(
+    p => activeFilter === "all" ||
+    (activeFilter === "physical"
+      ? p.type === "physical"
+      : p.type === "digital")
+  );
+
+  document.querySelector("#products").innerHTML = list.map(p => {
+    const stock = Number(p.stock_quantity ?? 0);
+    const isDigital = p.type === "digital";
+    const soldOut = !isDigital && stock <= 0;
+
+    return `
+      <article class="product">
+        <div class="product-art">
+          ${p.image_url
+            ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+            : (p.emoji || "🌸")}
+        </div>
+
+        <div class="product-body">
+          <h3>${p.name}</h3>
+
+          <span class="tag">
+            ${isDigital ? "Cyfrowy PDF" : "Fizyczny"}
+          </span>
+
+          <p>${p.description || ""}</p>
+
+          <div class="price">${money(p.price)}</div>
+
+          <p class="stock-info">
+            ${isDigital
+              ? "Dostępny jako PDF"
+              : soldOut
+                ? "Brak w magazynie"
+                : `Dostępne sztuki: ${stock}`}
+          </p>
+
+          <button
+            class="btn full"
+            data-add="${p.id}"
+            type="button"
+            ${soldOut ? "disabled" : ""}
+          >
+            ${soldOut ? "Brak w magazynie" : "＋ Dodaj do koszyka"}
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+
+
+  function renderCart() {
+    const count = itemCount();
+    document.querySelector("#cartCount").textContent = count;
+    document.querySelector("#cartTitleCount").textContent = count;
+
+    const itemsEl = document.querySelector("#cartItems");
+    if (!cart.length) {
+      itemsEl.innerHTML = '<div class="empty">Twój koszyk jest pusty. ♡<br><small>Dodaj coś pięknego!</small></div>';
+    } else {
+      itemsEl.innerHTML = cart.map(item => {
+        const p = productById(item.id);
+        return `
+          <div class="cart-item">
+            <div class="mini-art" aria-hidden="true">${p.emoji}</div>
+            <div>
+              <button class="remove" data-remove="${p.id}" aria-label="Usuń ${p.name}" type="button">×</button>
+              <h4>${p.name}</h4>
+              <small>${p.type === "physical" ? "Produkt fizyczny" : "Produkt cyfrowy PDF"}</small>
+              <div><strong>${money(p.price * item.qty)}</strong></div>
+              <div class="qty">
+                <button data-change="-1" data-id="${p.id}" aria-label="Zmniejsz ilość" type="button">−</button>
+                <span>${item.qty}</span>
+                <button data-change="1" data-id="${p.id}" aria-label="Zwiększ ilość" type="button">+</button>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    const sub = subtotal();
+    const ship = shippingCost();
+    document.querySelector("#subtotal").textContent = money(sub);
+    document.querySelector("#shipping").textContent = money(ship);
+    document.querySelector("#total").textContent = money(sub + ship);
+    document.querySelector("#checkoutSubtotal").textContent = money(sub);
+    document.querySelector("#checkoutShipping").textContent = money(ship);
+    document.querySelector("#checkoutTotal").textContent = money(sub + ship);
+
+    const needsShipping = hasPhysical();
+    const locker = selectedDelivery() === "locker";
+    document.querySelector("#addressFields").classList.toggle("hidden", !needsShipping || locker);
+    document.querySelector("#lockerField").classList.toggle("hidden", !needsShipping || !locker);
+
+    for (const id of ["address", "postcode", "city"]) {
+      document.getElementById(id).required = needsShipping && !locker;
+    }
+    document.querySelector("#locker").required = needsShipping && locker;
+    document.querySelector("#goCheckout").disabled = !cart.length;
+  }
+
+  function addToCart(id) {
+    const found = cart.find(item => item.id === id);
+    if (found) found.qty += 1;
+    else cart.push({ id, qty: 1 });
+    saveCart();
+    renderCart();
+  }
+
+  document.addEventListener("click", event => {
+    const add = event.target.closest("[data-add]");
+    if (add) {
+      addToCart(add.dataset.add);
+      return;
+    }
+
+    const remove = event.target.closest("[data-remove]");
+    if (remove) {
+      cart = cart.filter(item => item.id !== remove.dataset.remove);
+      saveCart();
+      renderCart();
+      return;
+    }
+
+    const change = event.target.closest("[data-change]");
+    if (change) {
+      const item = cart.find(i => i.id === change.dataset.id);
+      if (item) {
+        item.qty += Number(change.dataset.change);
+        if (item.qty <= 0) cart = cart.filter(i => i.id !== change.dataset.id);
+        saveCart();
+        renderCart();
+      }
+    }
+  });
+
+  document.querySelectorAll("[data-filter]").forEach(button => {
+    button.addEventListener("click", () => {
+      activeFilter = button.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach(b =>
+        b.classList.toggle("active", b === button)
+      );
+      renderProducts();
+    });
+  });
+
+  document.querySelectorAll('input[name="delivery"]').forEach(input => {
+    input.addEventListener("change", renderCart);
+  });
+
+  document.querySelector("#jumpCart").addEventListener("click", () => {
+    document.querySelector("#cartPanel").scrollIntoView({ behavior: "smooth" });
+  });
+
+  document.querySelector("#goCheckout").addEventListener("click", () => {
+    if (cart.length) document.querySelector("#checkout").scrollIntoView({ behavior: "smooth" });
+  });
+
+  
+    
+document.querySelector("#checkoutForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const status = document.querySelector("#status");
+  status.style.display = "block";
+  status.classList.remove("error");
+  status.textContent = "Wysyłanie zamówienia...";
+
+  if (!cart.length) {
+    status.classList.add("error");
+    status.textContent =
+      "Twój koszyk jest pusty. Dodaj produkt przed zamówieniem.";
+    return;
+  }
+
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+
+  const physical = hasPhysical();
+  const delivery = physical ? selectedDelivery() : "digital";
+
+  const payload = {
+    customer: {
+      name: form.elements.customerName.value.trim(),
+      email: form.elements.email.value.trim(),
+      phone: form.elements.phone.value.trim()
+    },
+    deliveryMethod: delivery,
+    pickupPoint:
+      physical && delivery === "locker"
+        ? form.elements.locker.value.trim()
+        : "",
+    deliveryAddress:
+      physical && delivery === "courier"
+        ? form.elements.address.value.trim()
+        : "",
+    deliveryPostcode:
+      physical && delivery === "courier"
+        ? form.elements.postcode.value.trim()
+        : "",
+    deliveryCity:
+      physical && delivery === "courier"
+        ? form.elements.city.value.trim()
+        : "",
+    discountCode: form.elements.discountCode
+      ? form.elements.discountCode.value.trim()
+      : "",
+    items: cart.map(item => ({
+      id: item.id,
+      quantity: Number(item.qty)
+    }))
+  };
+
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/functions/v1/create-order`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "Nie udało się utworzyć zamówienia."
+      );
+    }
+
+    const paymentResponse = await fetch(
+      `${SUPABASE_URL}/functions/v1/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        },
+        body: JSON.stringify({
+          orderNumber: result.orderNumber,
+          email: payload.customer.email
+        })
+      }
+    );
+
+    const paymentResult = await paymentResponse.json();
+
+    if (!paymentResponse.ok || !paymentResult.checkoutUrl) {
+      throw new Error(
+        paymentResult.error || "Nie udało się uruchomić płatności."
+      );
+    }
+
+    window.location.href = paymentResult.checkoutUrl;
+    return;
+
+   
+    heading.textContent = "Dziękujemy za zamówienie w Saverii! 🌸";
+
+
+const details = document.createElement("p");
+details.textContent =
+  `Numer zamówienia: ${result.orderNumber}. ` +
+  `Produkty: ${money(result.subtotal)}. ` +
+  (result.discountCode
+    ? `Kod rabatowy: ${result.discountCode}. ` +
+      `Rabat: −${money(result.discountAmount)}. `
+    : "") +
+  `Dostawa: ${money(result.shippingFee)}. ` +
+  `Razem: ${money(result.total)}. ` +
+  "Zapisaliśmy Twoje zamówienie. Gdy zostanie opłacone, przekażemy Ci informacje o dalszych krokach.";
+
+status.append(heading, details);
+
+
+    console.info("Saveria — zapisano zamówienie:", result.orderNumber);
+  } catch (error) {
+    console.error("Saveria — błąd zapisu zamówienia:", error);
+
+    status.classList.add("error");
+    status.textContent =
+      error.message ||
+      "Nie udało się wysłać zamówienia. Spróbuj ponownie.";
+  }
+});
+async function loadProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Błąd pobierania produktów:", error.message);
+    return;
+  }
+
+  products = data.map(p => ({
+    ...p,
+    type: p.type || "physical",
+    emoji: "🌸"
+  }));
+
+  renderProducts();
+}
+loadProducts();
+renderCart();
+</script type="module">
+</body>
+</html>

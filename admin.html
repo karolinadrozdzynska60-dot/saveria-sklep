@@ -1,0 +1,987 @@
+
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel administratora | Saveria</title>
+
+  <style>
+    :root {
+      --pink: #dba5b5;
+      --pink-dark: #8c5266;
+      --cream: #fffaf5;
+      --beige: #f2e8dd;
+      --text: #493b3c;
+      --muted: #857476;
+      --white: #ffffff;
+      --border: #eadde0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      background: var(--pink-dark);
+      color: white;
+    }
+
+    button:disabled { opacity: .55; cursor: wait; }
+
+    .topbar {
+      padding: 22px 6%;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand {
+      font-family: Georgia, serif;
+      font-size: 30px;
+      color: var(--pink-dark);
+      margin: 0;
+    }
+
+    .subtitle { color: var(--muted); margin: 6px 0 0; }
+
+    main {
+      width: min(1100px, 92%);
+      margin: 36px auto;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 30px #493b3c08;
+    }
+
+    h2 { margin-top: 0; }
+
+    label {
+      display: block;
+      margin: 14px 0 7px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      color: var(--text);
+    }
+
+    .login-card { max-width: 460px; margin: 55px auto; }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f8edf0;
+      overflow-wrap: anywhere;
+    }
+
+    .error { color: #9c2f43; background: #fff0f0; }
+    .hidden { display: none !important; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .summary .card { margin: 0; }
+    .number { font-size: 27px; font-weight: bold; margin: 8px 0 0; }
+
+    .order {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .order:last-child { border-bottom: 0; }
+
+    .order-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .order-number { font-size: 19px; font-weight: bold; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .order-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .product-line {
+      padding: 7px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .status-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .status-controls select { max-width: 220px; }
+
+    @media (max-width: 650px) {
+      .summary { grid-template-columns: 1fr; }
+      .order-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 18px 4%; }
+      main { margin-top: 22px; }
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div>
+      <h1 class="brand">Saveria</h1>
+      <p class="subtitle">Panel administratora</p>
+    </div>
+    <button id="logoutBtn" class="hidden" type="button">Wyloguj</button>
+  </header>
+
+  <main>
+    <section id="loginSection" class="card login-card">
+      <h2>Witaj ponownie 🌷</h2>
+      <p class="muted">Zaloguj się, aby zarządzać zamówieniami.</p>
+
+      <form id="loginForm">
+        <label for="email">Adres e-mail</label>
+        <input id="email" type="email" autocomplete="username"
+          required placeholder="twoj@email.pl">
+
+        <label for="password">Hasło</label>
+        <input id="password" type="password"
+          autocomplete="current-password" required>
+
+        <button type="submit" id="loginBtn" style="width:100%; margin-top:20px">
+          Zaloguj się
+        </button>
+      </form>
+
+      <p id="loginMessage" class="message hidden" role="status"></p>
+    </section>
+
+    <section id="dashboard" class="hidden">
+
+<div class="card">
+  <h2>Kody rabatowe</h2>
+  <p class="muted">Utwórz kod, ustaw wysokość rabatu i opcjonalną datę wygaśnięcia.</p>
+
+  <form id="discountForm">
+    <label for="discountCode">Kod rabatowy</label>
+    <input
+      id="discountCode"
+      type="text"
+      placeholder="Np. WIOSNA15"
+      maxlength="40"
+      required
+    >
+
+    <label for="discountPercent">Wysokość rabatu (%)</label>
+    <input
+      id="discountPercent"
+      type="number"
+      min="1"
+      max="100"
+      step="1"
+      placeholder="Np. 15"
+      required
+    >
+
+<label for="discountMinOrder">Minimalna wartość zamówienia (zł)</label>
+<input
+  id="discountMinOrder"
+  type="number"
+  min="0"
+  step="0.01"
+  value="0"
+  required
+>
+<small>Wpisz np. 100, aby kod działał od 100 zł. Wartość 0 oznacza brak minimum.</small>
+
+    <label for="discountExpiry">Data wygaśnięcia (opcjonalnie)</label>
+    <input
+      id="discountExpiry"
+      type="date"
+    >
+
+    <label>
+      <input
+        id="discountActive"
+        type="checkbox"
+        checked
+      >
+      Kod aktywny
+    </label>
+
+    <button type="submit">Dodaj kod rabatowy</button>
+  </form>
+
+  <p id="discountMessage" class="message hidden" role="status"></p>
+
+  <div id="discountList"></div>
+</div>
+
+<div class="card">
+  <h2>Dodaj nowy produkt</h2>
+  <p class="muted">Uzupełnij dane produktu, który chcesz dodać do sklepu.</p>
+
+  <form id="productForm">
+    <label for="productName">Nazwa produktu</label>
+    <input
+      id="productName"
+      type="text"
+      placeholder="Np. Bransoletka Saveria"
+      required
+    >
+
+    <label for="productDescription">Opis produktu</label>
+    <textarea
+      id="productDescription"
+      placeholder="Opisz produkt..."
+      rows="4"
+      required
+    ></textarea>
+
+    <label for="productPrice">Cena (zł)</label>
+    <input
+      id="productPrice"
+      type="number"
+      min="0.01"
+      step="0.01"
+      placeholder="29.99"
+      required
+    >
+```html
+<label for="productStock">Liczba dostępnych sztuk</label>
+<input
+  id="productStock"
+  type="number"
+  min="0"
+  step="1"
+  value="10"
+  required
+>
+<small>Wpisz, ile sztuk produktu jest dostępnych w sklepie.</small>
+```
+    <label for="productCategory">Kategoria</label>
+    <input
+      id="productCategory"
+      type="text"
+      placeholder="Np. Biżuteria"
+      required
+    >
+
+<label for="productType">Rodzaj produktu</label>
+<select id="productType" required>
+  <option value="physical">Fizyczny — wysyłka</option>
+  <option value="digital">Cyfrowy — PDF</option>
+</select>
+
+
+    <label for="productImage">Zdjęcie produktu</label>
+    <input
+      id="productImage"
+      type="file"
+      accept="image/*"
+      required
+    >
+
+    <label for="productPdf">Plik PDF (dla produktu cyfrowego)</label>
+    <input
+      id="productPdf"
+      type="file"
+      accept="application/pdf"
+    >
+
+    <button type="submit">Dodaj produkt</button>
+    <p id="productMessage" class="message hidden" role="status"></p>
+  </form>
+</div>
+
+      <div class="card">
+        <h2>Twoje zamówienia</h2>
+        <p class="muted">Tutaj znajdziesz zamówienia zapisane w Supabase.</p>
+        <button id="refreshBtn" type="button">Odśwież zamówienia</button>
+        <p id="dashboardMessage" class="message hidden" role="status"></p>
+      </div>
+
+      <div class="summary">
+        <div class="card">
+          <div class="muted">Wszystkie zamówienia</div>
+          <p class="number" id="totalCount">—</p>
+        </div>
+        <div class="card">
+          <div class="muted">Nowe zamówienia</div>
+          <p class="number" id="newCount">—</p>
+        </div>
+        <div class="card">
+          <div class="muted">Wartość zamówień</div>
+          <p class="number" id="totalValue">—</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="ordersList">Ładowanie zamówień…</div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from
+      "https://esm.sh/@supabase/supabase-js@2";
+
+    // Wpisz tutaj swój Project URL i klucz publishable z Supabase.
+    const SUPABASE_URL = "https://mzshkdilydgmxjtyowdh.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_x7NU2M5TvynbEwec4gLQSw_j_MQpxF5";
+
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+const productForm = document.getElementById("productForm");
+const productMessage = document.getElementById("productMessage");
+
+productForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const submitButton = productForm.querySelector(
+    'button[type="submit"]'
+  );
+
+  submitButton.disabled = true;
+  productMessage.classList.remove("hidden");
+  productMessage.textContent = "Zapisywanie produktu…";
+
+  let uploadedPath = null;
+  let uploadedPdfPath = null;
+
+  try {
+    const name = document.getElementById("productName").value.trim();
+    const description = document.getElementById("productDescription").value.trim();
+    const price = Number(document.getElementById("productPrice").value);
+    const category = document.getElementById("productCategory").value.trim();
+    const type = document.getElementById("productType").value;
+    console.log("Wybrany rodzaj produktu:", type); 
+    const imageFile = document.getElementById("productImage").files[0];
+    const pdfFile = document.getElementById("productPdf").files[0];
+
+    if (!name || !description || !category || !imageFile || !Number.isFinite(price) || price <= 0) {
+      throw new Error("Uzupełnij wszystkie pola i podaj poprawną cenę.");
+    }
+if (type === "digital" && !pdfFile) {
+  throw new Error("Dla produktu cyfrowego wybierz plik PDF.");
+}
+
+if (pdfFile && pdfFile.type !== "application/pdf") {
+  throw new Error("Plik poradnika musi być w formacie PDF.");
+}
+    if (!imageFile.type.startsWith("image/")) {
+      throw new Error("Wybierz plik zdjęcia.");
+    }
+
+    const extension = imageFile.name.split(".").pop().toLowerCase();
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
+
+    if (!allowedExtensions.includes(extension)) {
+      throw new Error("Zdjęcie musi być w formacie JPG, PNG, WEBP lub GIF.");
+    }
+
+    const filePath = `products/${crypto.randomUUID()}.${extension}`;
+
+    const { data: uploadedImage, error: uploadError } = await supabase
+      .storage
+      .from("product-images")
+      .upload(filePath, imageFile, { upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    uploadedPath = uploadedImage.path;
+    if (pdfFile) {
+  const pdfPath = `products/${crypto.randomUUID()}.pdf`;
+
+  const { data: uploadedPdf, error: pdfUploadError } = await supabase
+    .storage
+    .from("product-pdfs")
+    .upload(pdfPath, pdfFile, { upsert: false });
+
+  if (pdfUploadError) throw pdfUploadError;
+
+  uploadedPdfPath = uploadedPdf.path;
+}
+
+    const { data: publicUrlData } = supabase
+      .storage
+      .from("product-images")
+      .getPublicUrl(uploadedPath);
+
+    const { error: insertError } = await supabase
+      .from("products")
+      .insert({
+        name,
+        description,
+        price,
+        category,
+        type: type,
+        pdf_path: uploadedPdfPath,
+        stock_quantity: Number(document.getElementById("productStock").value),
+        image_url: publicUrlData.publicUrl,
+        active: true
+      });
+
+    if (insertError) throw insertError;
+
+    productForm.reset();
+    productMessage.textContent =
+      "Produkt zapisany! Następnie połączymy go z widokiem sklepu.";
+
+  } catch (error) {
+    productMessage.textContent =
+      "Nie udało się zapisać produktu: " + error.message;
+
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+
+    const loginSection = document.querySelector("#loginSection");
+
+const discountForm = document.querySelector("#discountForm");
+const discountMessage = document.querySelector("#discountMessage");
+const discountList = document.querySelector("#discountList");
+
+async function loadDiscountCodes() {
+  discountList.textContent = "Ładowanie kodów…";
+
+  const { data, error } = await supabase
+    .from("discount_codes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    discountList.textContent = "Nie udało się pobrać kodów.";
+    console.error(error);
+    return;
+  }
+
+  discountList.replaceChildren();
+
+  if (!data.length) {
+    discountList.textContent = "Nie ma jeszcze żadnych kodów.";
+    return;
+  }
+
+  for (const code of data) {
+    const item = document.createElement("div");
+    item.className = "product-line";
+
+    const expiry = code.expires_at
+      ? new Date(code.expires_at).toLocaleDateString("pl-PL")
+      : "Bez daty wygaśnięcia";
+
+    item.textContent =
+      `${code.code} — ${code.discount_percent}% rabatu, ` +
+      `minimum ${money(code.min_order_amount)} — ${expiry} — ` +
+      (code.active ? "Aktywny" : "Nieaktywny");
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.textContent = code.active ? "Wyłącz kod" : "Włącz kod";
+
+    toggle.addEventListener("click", async () => {
+      toggle.disabled = true;
+
+      const { error: updateError } = await supabase
+        .from("discount_codes")
+        .update({ active: !code.active })
+        .eq("id", code.id);
+
+      if (updateError) {
+        showMessage(
+          discountMessage,
+          "Nie udało się zmienić statusu kodu.",
+          true
+        );
+        console.error(updateError);
+        toggle.disabled = false;
+        return;
+      }
+
+      hideMessage(discountMessage);
+      await loadDiscountCodes();
+    });
+
+    item.append(" ", toggle);
+    discountList.append(item);
+  }
+}
+
+discountForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const button = discountForm.querySelector('button[type="submit"]');
+  button.disabled = true;
+  hideMessage(discountMessage);
+
+  try {
+    const code = document
+      .querySelector("#discountCode")
+      .value.trim()
+      .toUpperCase();
+
+    const percent = Number(
+      document.querySelector("#discountPercent").value
+    );
+
+    const minOrder = Number(
+      document.querySelector("#discountMinOrder").value
+    );
+
+    const expiry = document.querySelector("#discountExpiry").value;
+    const active = document.querySelector("#discountActive").checked;
+
+    if (
+      !/^[A-Z0-9_-]{3,40}$/.test(code) ||
+      !Number.isInteger(percent) ||
+      percent < 1 ||
+      percent > 100 ||
+      !Number.isFinite(minOrder) ||
+      minOrder < 0
+    ) {
+      throw new Error(
+        "Sprawdź kod, procent rabatu i minimalną wartość zamówienia."
+      );
+    }
+
+    const expiresAt = expiry
+      ? new Date(`${expiry}T23:59:59`).toISOString()
+      : null;
+
+    const { error } = await supabase
+      .from("discount_codes")
+      .insert({
+        code,
+        discount_percent: percent,
+        min_order_amount: minOrder,
+        expires_at: expiresAt,
+        active
+      });
+
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error("Taki kod już istnieje. Wybierz inną nazwę.");
+      }
+      throw error;
+    }
+
+    discountForm.reset();
+    document.querySelector("#discountMinOrder").value = "0";
+    document.querySelector("#discountActive").checked = true;
+
+    showMessage(discountMessage, "Kod rabatowy został zapisany!");
+    await loadDiscountCodes();
+  } catch (error) {
+    showMessage(
+      discountMessage,
+      "Nie udało się zapisać kodu: " + error.message,
+      true
+    );
+  } finally {
+    button.disabled = false;
+  }
+});
+
+    const dashboard = document.querySelector("#dashboard");
+    const loginForm = document.querySelector("#loginForm");
+    const loginBtn = document.querySelector("#loginBtn");
+    const loginMessage = document.querySelector("#loginMessage");
+    const dashboardMessage = document.querySelector("#dashboardMessage");
+    const logoutBtn = document.querySelector("#logoutBtn");
+    const ordersList = document.querySelector("#ordersList");
+
+    // Statusy muszą odpowiadać ograniczeniu statusu w Twojej bazie.
+    const statuses = [
+      { value: "new", label: "Nowe" },
+      { value: "paid", label: "Opłacone" },
+      { value: "processing", label: "W realizacji" },
+      { value: "shipped", label: "Wysłane" },
+      { value: "completed", label: "Zakończone" },
+      { value: "cancelled", label: "Anulowane" }
+    ];
+
+    const money = value =>
+      new Intl.NumberFormat("pl-PL", {
+        style: "currency",
+        currency: "PLN"
+      }).format(Number(value) || 0);
+
+    const dateFormat = value => {
+      if (!value) return "—";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime())
+        ? "—"
+        : date.toLocaleString("pl-PL");
+    };
+
+    function showMessage(element, text, isError = false) {
+      element.textContent = text;
+      element.classList.remove("hidden", "error");
+      if (isError) element.classList.add("error");
+    }
+
+    function hideMessage(element) {
+      element.textContent = "";
+      element.classList.add("hidden");
+      element.classList.remove("error");
+    }
+
+    function showLogin() {
+      loginSection.classList.remove("hidden");
+      dashboard.classList.add("hidden");
+      logoutBtn.classList.add("hidden");
+    }
+
+    function showDashboard() {
+      loginSection.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      logoutBtn.classList.remove("hidden");
+    }
+
+    function addText(parent, tag, text, className = "") {
+      const element = document.createElement(tag);
+      element.textContent = text ?? "—";
+      if (className) element.className = className;
+      parent.append(element);
+      return element;
+    }
+
+    function addDetail(parent, title, value) {
+      const line = document.createElement("p");
+      const strong = document.createElement("strong");
+      strong.textContent = title + ": ";
+      line.append(strong, document.createTextNode(value || "—"));
+      parent.append(line);
+    }
+
+    function statusLabel(status) {
+      return statuses.find(item => item.value === status)?.label || status || "—";
+    }
+
+    async function loadOrders() {
+      hideMessage(dashboardMessage);
+      ordersList.textContent = "Ładowanie zamówień…";
+
+      const { data: orders, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        ordersList.textContent = "";
+        showMessage(
+          dashboardMessage,
+          "Nie udało się pobrać zamówień: " + error.message,
+          true
+        );
+        return;
+      }
+
+      document.querySelector("#totalCount").textContent = orders.length;
+      document.querySelector("#newCount").textContent =
+        orders.filter(order => order.status === "new").length;
+      document.querySelector("#totalValue").textContent = money(
+        orders.reduce((sum, order) => sum + Number(order.total || 0), 0)
+      );
+
+      ordersList.replaceChildren();
+
+      if (!orders.length) {
+        ordersList.textContent = "Nie ma jeszcze żadnych zamówień.";
+        return;
+      }
+
+      // Pobieramy produkty dla wszystkich zamówień na raz.
+      const orderIds = orders.map(order => order.id);
+      const { data: items, error: itemsError } = await supabase
+        .from("order_items")
+        .select("*")
+        .in("order_id", orderIds);
+
+      if (itemsError) {
+        showMessage(
+          dashboardMessage,
+          "Nie udało się pobrać produktów: " + itemsError.message,
+          true
+        );
+        return;
+      }
+
+      const itemsByOrder = new Map();
+
+      for (const item of items || []) {
+        if (!itemsByOrder.has(item.order_id)) {
+          itemsByOrder.set(item.order_id, []);
+        }
+        itemsByOrder.get(item.order_id).push(item);
+      }
+
+      for (const order of orders) {
+        const section = document.createElement("section");
+        section.className = "order";
+
+        const heading = document.createElement("div");
+        heading.className = "order-heading";
+
+        const titleGroup = document.createElement("div");
+        addText(
+          titleGroup,
+          "div",
+          "Zamówienie " + (order.order_number || order.id),
+          "order-number"
+        );
+        addText(
+          titleGroup,
+          "p",
+          dateFormat(order.created_at),
+          "muted"
+        );
+
+        const totalGroup = document.createElement("div");
+        addText(totalGroup, "div", money(order.total), "order-number");
+        addText(
+          totalGroup,
+          "div",
+          "Status: " + statusLabel(order.status),
+          "muted"
+        );
+
+        heading.append(titleGroup, totalGroup);
+        section.append(heading);
+
+        const details = document.createElement("div");
+        details.className = "order-grid";
+
+        const customer = document.createElement("div");
+        addText(customer, "h3", "Klient");
+        addDetail(customer, "Imię i nazwisko", order.customer_name);
+        addDetail(customer, "E-mail", order.customer_email);
+        addDetail(customer, "Telefon", order.customer_phone);
+
+        const delivery = document.createElement("div");
+        addText(delivery, "h3", "Dostawa i płatność");
+        addDetail(delivery, "Metoda", order.delivery_method);
+        addDetail(delivery, "Adres", order.delivery_address);
+        addDetail(delivery, "Kod pocztowy", order.delivery_postcode);
+        addDetail(delivery, "Miasto", order.delivery_city);
+        addDetail(delivery, "Punkt odbioru", order.pickup_point);
+        addDetail(delivery, "Produkty", money(order.subtotal));
+        addDetail(delivery, "Dostawa", money(order.shipping_fee));
+
+        details.append(customer, delivery);
+        section.append(details);
+
+        const productBox = document.createElement("div");
+        addText(productBox, "h3", "Kupione produkty");
+
+        const orderItems = itemsByOrder.get(order.id) || [];
+
+        if (!orderItems.length) {
+          addText(productBox, "p", "Brak pozycji w tym zamówieniu.");
+        } else {
+          for (const item of orderItems) {
+            addText(
+              productBox,
+              "div",
+              `${item.product_name} · ${item.quantity} szt. · ${money(item.unit_price)} / szt.`,
+              "product-line"
+            );
+          }
+        }
+
+        section.append(productBox);
+
+        const controls = document.createElement("div");
+        controls.className = "status-controls";
+
+        const select = document.createElement("select");
+        select.setAttribute(
+          "aria-label",
+          "Status zamówienia " + (order.order_number || order.id)
+        );
+
+        for (const status of statuses) {
+          const option = document.createElement("option");
+          option.value = status.value;
+          option.textContent = status.label;
+          select.append(option);
+        }
+
+        // Jeżeli istnieje status spoza listy, pokaż go bez automatycznej zmiany.
+        if (!statuses.some(item => item.value === order.status)) {
+          const option = document.createElement("option");
+          option.value = order.status;
+          option.textContent = order.status;
+          select.append(option);
+        }
+
+        select.value = order.status;
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.textContent = "Zapisz status";
+
+        saveButton.addEventListener("click", async () => {
+          saveButton.disabled = true;
+          hideMessage(dashboardMessage);
+
+          const { error: updateError } = await supabase
+            .from("orders")
+            .update({ status: select.value })
+            .eq("id", order.id);
+
+          saveButton.disabled = false;
+
+          if (updateError) {
+            showMessage(
+              dashboardMessage,
+              "Nie udało się zmienić statusu: " + updateError.message,
+              true
+            );
+            return;
+          }
+
+          showMessage(
+            dashboardMessage,
+            "Zapisano status zamówienia " +
+              (order.order_number || order.id) + "."
+          );
+
+          await loadOrders();
+        });
+
+        controls.append(select, saveButton);
+        section.append(controls);
+        ordersList.append(section);
+      }
+    }
+
+    loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      hideMessage(loginMessage);
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Logowanie…";
+
+      const email = document.querySelector("#email").value.trim();
+      const password = document.querySelector("#password").value;
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Zaloguj się";
+
+      if (error) {
+        showMessage(
+          loginMessage,
+          "Nie udało się zalogować. Sprawdź e-mail, hasło i ustawienia konta.",
+          true
+        );
+      }
+      // Po udanym logowaniu onAuthStateChange sprawdzi uprawnienia.
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        showMessage(
+          dashboardMessage,
+          "Nie udało się wylogować: " + error.message,
+          true
+        );
+      }
+    });
+
+    document.querySelector("#refreshBtn").addEventListener("click", loadOrders);
+
+    let checkingSession = false;
+
+    async function checkAdmin(session) {
+      if (checkingSession) return;
+      checkingSession = true;
+
+      try {
+        if (!session) {
+          showLogin();
+          return;
+        }
+
+        // Sprawdzamy uprawnienia po stronie bazy.
+        const { data: isAdmin, error } = await supabase.rpc(
+          "is_saveria_admin"
+        );
+
+        if (error || isAdmin !== true) {
+          await supabase.auth.signOut();
+          showLogin();
+          showMessage(
+            loginMessage,
+            "To konto nie ma uprawnień administratora.",
+            true
+          );
+          return;
+        }
+
+       showDashboard();
+await loadOrders();
+await loadDiscountCodes();
+      } finally {
+        checkingSession = false;
+      }
+    }
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      // Odkładamy zapytania do Supabase poza callback zdarzenia.
+      setTimeout(() => checkAdmin(session), 0);
+    });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    await checkAdmin(session);
+  </script>
+</body>
+</html>
