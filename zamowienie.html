@@ -138,33 +138,96 @@
         <label for="phone">Numer telefonu</label>
         <input id="phone" name="phone" type="tel" required>
 
-        <h2>Sposób dostawy</h2>
+       
+<h2>Sposób dostawy</h2>
 
-        <label class="delivery-option">
-          <input type="radio" name="delivery" value="locker" checked>
-          Paczkomat InPost — 16 zł
-        </label>
+<label class="delivery-option">
+  <input type="radio" name="delivery" value="locker" checked>
+  Paczkomat InPost — 16 zł
+</label>
 
-        <label class="delivery-option">
-          <input type="radio" name="delivery" value="courier">
-          Kurier InPost — 19 zł
-        </label>
+<label class="delivery-option">
+  <input type="radio" name="delivery" value="courier">
+  Kurier InPost — 19 zł
+</label>
 
-        <div id="lockerFields">
-          <label for="locker">Nazwa lub adres paczkomatu InPost</label>
-          <input id="locker" name="locker">
-        </div>
+<div id="lockerFields">
+  <label for="locker">Nazwa lub adres paczkomatu InPost</label>
+  <input
+    id="locker"
+    name="locker"
+    type="text"
+    required
+  >
+</div>
 
-        <div id="addressFields">
-          <label for="address">Ulica i numer domu</label>
-          <input id="address" name="address">
+<div id="addressFields">
+  <label for="address">Ulica i numer domu</label>
+  <input
+    id="address"
+    name="address"
+    type="text"
+  >
+</div>
 
-          <label for="postcode">Kod pocztowy</label>
-          <input id="postcode" name="postcode">
+<div id="locationFields">
+  <label for="postcode">Kod pocztowy</label>
+  <input
+    id="postcode"
+    name="postcode"
+    type="text"
+    required
+    pattern="[0-9]{2}-[0-9]{3}"
+    placeholder="00-000"
+  >
 
-          <label for="city">Miasto</label>
-          <input id="city" name="city">
-        </div>
+  <label for="city">Miasto</label>
+  <input
+    id="city"
+    name="city"
+    type="text"
+    required
+  >
+</div>
+
+<script>
+  const deliveryOptions = document.querySelectorAll(
+    'input[name="delivery"]'
+  );
+
+  const lockerFields = document.getElementById('lockerFields');
+  const addressFields = document.getElementById('addressFields');
+
+  const lockerInput = document.getElementById('locker');
+  const addressInput = document.getElementById('address');
+
+  function updateDeliveryFields() {
+    const selected = document.querySelector(
+      'input[name="delivery"]:checked'
+    ).value;
+
+    if (selected === 'locker') {
+      lockerFields.style.display = 'block';
+      addressFields.style.display = 'none';
+
+      lockerInput.required = true;
+      addressInput.required = false;
+    } else {
+      lockerFields.style.display = 'none';
+      addressFields.style.display = 'block';
+
+      lockerInput.required = false;
+      addressInput.required = true;
+    }
+  }
+
+  deliveryOptions.forEach(option => {
+    option.addEventListener('change', updateDeliveryFields);
+  });
+
+  updateDeliveryFields();
+</script>
+
 
         <button class="btn" id="submitButton" type="submit">
           Przejdź do płatności
