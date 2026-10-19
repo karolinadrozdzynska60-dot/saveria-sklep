@@ -344,45 +344,6 @@
 })();
 </script>
 
-
-
-
-<p class="notice">
-  Przy zamówieniu wyłącznie produktów cyfrowych dostawa jest bezpłatna.
-</p>
-
-<script>
-  const deliveryRadios = document.querySelectorAll(
-    'input[name="delivery"]'
-  );
-
-  const lockerField = document.getElementById('lockerField');
-  const lockerInput = document.getElementById('locker');
-  const streetField = document.getElementById('streetField');
-  const addressInput = document.getElementById('address');
-
-  function updateDeliveryFields() {
-    const delivery = document.querySelector(
-      'input[name="delivery"]:checked'
-    ).value;
-
-    const isLocker = delivery === 'locker';
-
-    lockerField.classList.toggle('hidden', !isLocker);
-    streetField.classList.toggle('hidden', isLocker);
-
-    lockerInput.required = isLocker;
-    addressInput.required = !isLocker;
-  }
-
-  deliveryRadios.forEach(radio => {
-    radio.addEventListener('change', updateDeliveryFields);
-  });
-
-  updateDeliveryFields();
-</script>
-
-
 <div class="field">
   <label for="discountCode">Kod rabatowy</label>
   <input
