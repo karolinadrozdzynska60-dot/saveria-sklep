@@ -711,8 +711,12 @@ document.querySelector("#checkoutForm").addEventListener("submit", async event =
       physical && delivery === "courier"
         ? form.elements.city.value.trim()
         : "",
+    
     discountCode: form.elements.discountCode
       ? form.elements.discountCode.value.trim()
+      : "",
+    notes: form.elements.notes
+      ? form.elements.notes.value.trim()
       : "",
     items: cart.map(item => ({
       id: item.id,
