@@ -219,102 +219,97 @@
         <div>
          
 
-<h3>1. Wybierz sposób dostawy</h3>
 
-<div class="delivery-options">
-  <label class="delivery-option">
-    <input type="radio" name="delivery" value="courier" checked>
-    <strong>🚚 Kurier InPost</strong>
-    <small>Dostawa pod wskazany adres. 19,00 zł</small>
-  </label>
+<h2>Sposób dostawy</h2>
 
-  <label class="delivery-option">
-    <input type="radio" name="delivery" value="locker">
-    <strong>▦ Paczkomat InPost</strong>
-    <small>Odbiór w wybranym punkcie. 16,00 zł</small>
-  </label>
-</div>
+<label class="delivery-option">
+  <input type="radio" name="delivery" value="locker" checked>
+  Paczkomat InPost — 16 zł
+</label>
 
-<div class="field hidden" id="lockerField">
+<label class="delivery-option">
+  <input type="radio" name="delivery" value="courier">
+  Kurier InPost — 19 zł
+</label>
+
+<div id="lockerFields">
   <label for="locker">Nazwa lub adres paczkomatu InPost *</label>
-  <input id="locker" name="locker" type="text"
-         placeholder="Np. kod punktu lub adres">
-  <small class="subtle">
-    Punkt wpisujesz ręcznie; mapa może zostać dodana później.
-  </small>
+  <input id="locker" name="locker" type="text">
 </div>
 
-<div id="addressFields">
-  <h3>2. Adres dostawy</h3>
-
-  <div class="field" id="streetField">
-    <label for="address">Ulica i numer *</label>
-    <input id="address" name="address"
-           autocomplete="street-address"
-           placeholder="Np. Kwiatowa 12">
-  </div>
-
-  <div class="checkout-grid">
-    <div class="field">
-      <label for="postcode">Kod pocztowy *</label>
-      <input id="postcode" name="postcode"
-             type="text"
-             autocomplete="postal-code"
-             placeholder="00-000"
-             pattern="[0-9]{2}-[0-9]{3}"
-             required>
-    </div>
-
-    <div class="field">
-      <label for="city">Miasto *</label>
-      <input id="city" name="city"
-             type="text"
-             autocomplete="address-level2"
-             placeholder="Np. Warszawa"
-             required>
-    </div>
-  </div>
+<div id="streetField">
+  <label for="address">Ulica i numer domu *</label>
+  <input id="address" name="address" type="text">
 </div>
+
+<div id="locationFields">
+  <label for="postcode">Kod pocztowy *</label>
+  <input
+    id="postcode"
+    name="postcode"
+    type="text"
+    placeholder="00-000"
+    pattern="[0-9]{2}-[0-9]{3}"
+    required
+  >
+
+  <label for="city">Miasto *</label>
+  <input id="city" name="city" type="text" required>
+</div>
+
+
 
 <script>
 (function () {
-  const radios = document.querySelectorAll(
-    'input[name="delivery"]'
-  );
-
-  const lockerField = document.getElementById("lockerField");
-  const lockerInput = document.getElementById("locker");
-  const streetField = document.getElementById("streetField");
-  const addressInput = document.getElementById("address");
-  const postcodeInput = document.getElementById("postcode");
-  const cityInput = document.getElementById("city");
-
-  function updateDeliveryFields() {
-    const selected = document.querySelector(
-      'input[name="delivery"]:checked'
+  function initDelivery() {
+    const radios = document.querySelectorAll(
+      'input[name="delivery"]'
     );
+    const locker = document.getElementById('locker');
+    const lockerFields = document.getElementById('lockerFields');
+    const streetField = document.getElementById('streetField');
+    const address = document.getElementById('address');
+    const postcode = document.getElementById('postcode');
+    const city = document.getElementById('city');
 
-    if (!selected) return;
+    if (!radios.length || !lockerFields || !streetField ||
+        !locker || !address || !postcode || !city) {
+      return;
+    }
 
-    const isLocker = selected.value === "locker";
+    function update() {
+      const selected = document.querySelector(
+        'input[name="delivery"]:checked'
+      );
 
-    lockerField.classList.toggle("hidden", !isLocker);
-    streetField.classList.toggle("hidden", isLocker);
+      if (!selected) return;
 
-    lockerInput.required = isLocker;
-    addressInput.required = !isLocker;
+      const isLocker = selected.value === 'locker';
 
-    postcodeInput.required = true;
-    cityInput.required = true;
+      lockerFields.style.display = isLocker ? '' : 'none';
+      streetField.style.display = isLocker ? 'none' : '';
+
+      locker.required = isLocker;
+      address.required = !isLocker;
+      postcode.required = true;
+      city.required = true;
+    }
+
+    radios.forEach(function (radio) {
+      radio.addEventListener('change', update);
+    });
+
+    update();
   }
 
-  radios.forEach(function (radio) {
-    radio.addEventListener("change", updateDeliveryFields);
-  });
-
-  updateDeliveryFields();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDelivery);
+  } else {
+    initDelivery();
+  }
 })();
 </script>
+
 
 
 <p class="notice">
