@@ -141,6 +141,7 @@
        
 
 
+
 <h3>1. Wybierz sposób dostawy</h3>
 
 <div class="delivery-options">
@@ -227,9 +228,15 @@
     const postcodeInput = document.getElementById('postcode');
     const cityInput = document.getElementById('city');
 
-    if (!radios.length || !lockerField || !lockerInput ||
-        !streetField || !addressInput ||
-        !postcodeInput || !cityInput) return;
+    if (
+      !radios.length ||
+      !lockerField ||
+      !streetField ||
+      !lockerInput ||
+      !addressInput ||
+      !postcodeInput ||
+      !cityInput
+    ) return;
 
     function updateDelivery() {
       const selected = document.querySelector(
@@ -240,13 +247,19 @@
 
       const isLocker = selected.value === 'locker';
 
+      // Ukrywamy wyłącznie pola właściwe dla danej dostawy.
       lockerField.classList.toggle('hidden', !isLocker);
       streetField.classList.toggle('hidden', isLocker);
 
+      // Paczkomat lub ulica — zależnie od wyboru.
       lockerInput.required = isLocker;
       addressInput.required = !isLocker;
+
+      // Miasto i kod pocztowy zawsze widoczne i wymagane.
       postcodeInput.required = true;
       cityInput.required = true;
+      postcodeInput.disabled = false;
+      cityInput.disabled = false;
     }
 
     radios.forEach(function (radio) {
@@ -263,10 +276,6 @@
   }
 })();
 </script>
-
-
-
-
 
         <button class="btn" id="submitButton" type="submit">
           Przejdź do płatności
