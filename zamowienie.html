@@ -183,6 +183,27 @@
           <small class="subtle">
             Podaj kod punktu lub jego adres.
           </small>
+                    <div id="lockerMapPanel" style="margin-top: 16px;">
+            <label for="lockerCity">Wpisz miasto lub kod pocztowy</label>
+            <input
+              id="lockerCity"
+              type="text"
+              placeholder="Np. Ostrów Wielkopolski"
+            >
+
+            <button type="button" id="searchLockers"
+              style="margin-top: 10px;">
+              Szukaj paczkomatów
+            </button>
+
+            <p id="lockerMapMessage" aria-live="polite">
+              Wpisz miasto, aby wyszukać dostępne punkty na mapie.
+            </p>
+
+            <div id="lockerMap"
+              style="height: 350px; width: 100%; border-radius: 10px;">
+            </div>
+          </div>
                     <a
             href="https://inpost.pl/znajdz-paczkomat"
             target="_blank"
