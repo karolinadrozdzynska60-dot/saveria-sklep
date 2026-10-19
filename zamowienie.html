@@ -139,6 +139,7 @@
         <input id="phone" name="phone" type="tel" required>
 
        
+
 <h2>Sposób dostawy</h2>
 
 <label class="delivery-option">
@@ -152,7 +153,7 @@
 </label>
 
 <div id="lockerFields">
-  <label for="locker">Nazwa lub adres paczkomatu InPost</label>
+  <label for="locker">Nazwa lub adres paczkomatu InPost *</label>
   <input
     id="locker"
     name="locker"
@@ -162,7 +163,7 @@
 </div>
 
 <div id="addressFields">
-  <label for="address">Ulica i numer domu</label>
+  <label for="address">Ulica i numer domu *</label>
   <input
     id="address"
     name="address"
@@ -171,7 +172,7 @@
 </div>
 
 <div id="locationFields">
-  <label for="postcode">Kod pocztowy</label>
+  <label for="postcode">Kod pocztowy *</label>
   <input
     id="postcode"
     name="postcode"
@@ -181,7 +182,7 @@
     placeholder="00-000"
   >
 
-  <label for="city">Miasto</label>
+  <label for="city">Miasto *</label>
   <input
     id="city"
     name="city"
@@ -191,6 +192,7 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
   const deliveryOptions = document.querySelectorAll(
     'input[name="delivery"]'
   );
@@ -200,33 +202,37 @@
 
   const lockerInput = document.getElementById('locker');
   const addressInput = document.getElementById('address');
+  const postcodeInput = document.getElementById('postcode');
+  const cityInput = document.getElementById('city');
 
   function updateDeliveryFields() {
     const selected = document.querySelector(
       'input[name="delivery"]:checked'
-    ).value;
+    );
 
-    if (selected === 'locker') {
-      lockerFields.style.display = 'block';
-      addressFields.style.display = 'none';
+    if (!selected) return;
 
-      lockerInput.required = true;
-      addressInput.required = false;
-    } else {
-      lockerFields.style.display = 'none';
-      addressFields.style.display = 'block';
+    const isLocker = selected.value === 'locker';
 
-      lockerInput.required = false;
-      addressInput.required = true;
-    }
+    lockerFields.style.display = isLocker ? 'block' : 'none';
+    addressFields.style.display = isLocker ? 'none' : 'block';
+
+    lockerInput.required = isLocker;
+    addressInput.required = !isLocker;
+
+    // Te pola są wymagane dla obu metod dostawy
+    postcodeInput.required = true;
+    cityInput.required = true;
   }
 
-  deliveryOptions.forEach(option => {
+  deliveryOptions.forEach(function (option) {
     option.addEventListener('change', updateDeliveryFields);
   });
 
   updateDeliveryFields();
+});
 </script>
+
 
 
         <button class="btn" id="submitButton" type="submit">
