@@ -218,6 +218,7 @@
       <div class="checkout-grid">
         <div>
          
+
 <h3>1. Wybierz sposób dostawy</h3>
 
 <div class="delivery-options">
@@ -236,11 +237,8 @@
 
 <div class="field hidden" id="lockerField">
   <label for="locker">Nazwa lub adres paczkomatu InPost *</label>
-  <input
-    id="locker"
-    name="locker"
-    placeholder="Np. kod punktu lub adres"
-  >
+  <input id="locker" name="locker" type="text"
+         placeholder="Np. kod punktu lub adres">
   <small class="subtle">
     Punkt wpisujesz ręcznie; mapa może zostać dodana później.
   </small>
@@ -251,39 +249,73 @@
 
   <div class="field" id="streetField">
     <label for="address">Ulica i numer *</label>
-    <input
-      id="address"
-      name="address"
-      autocomplete="street-address"
-      placeholder="Np. Kwiatowa 12"
-    >
+    <input id="address" name="address"
+           autocomplete="street-address"
+           placeholder="Np. Kwiatowa 12">
   </div>
 
   <div class="checkout-grid">
     <div class="field">
       <label for="postcode">Kod pocztowy *</label>
-      <input
-        id="postcode"
-        name="postcode"
-        autocomplete="postal-code"
-        placeholder="00-000"
-        required
-        pattern="[0-9]{2}-[0-9]{3}"
-      >
+      <input id="postcode" name="postcode"
+             type="text"
+             autocomplete="postal-code"
+             placeholder="00-000"
+             pattern="[0-9]{2}-[0-9]{3}"
+             required>
     </div>
 
     <div class="field">
       <label for="city">Miasto *</label>
-      <input
-        id="city"
-        name="city"
-        autocomplete="address-level2"
-        placeholder="Np. Warszawa"
-        required
-      >
+      <input id="city" name="city"
+             type="text"
+             autocomplete="address-level2"
+             placeholder="Np. Warszawa"
+             required>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  const radios = document.querySelectorAll(
+    'input[name="delivery"]'
+  );
+
+  const lockerField = document.getElementById("lockerField");
+  const lockerInput = document.getElementById("locker");
+  const streetField = document.getElementById("streetField");
+  const addressInput = document.getElementById("address");
+  const postcodeInput = document.getElementById("postcode");
+  const cityInput = document.getElementById("city");
+
+  function updateDeliveryFields() {
+    const selected = document.querySelector(
+      'input[name="delivery"]:checked'
+    );
+
+    if (!selected) return;
+
+    const isLocker = selected.value === "locker";
+
+    lockerField.classList.toggle("hidden", !isLocker);
+    streetField.classList.toggle("hidden", isLocker);
+
+    lockerInput.required = isLocker;
+    addressInput.required = !isLocker;
+
+    postcodeInput.required = true;
+    cityInput.required = true;
+  }
+
+  radios.forEach(function (radio) {
+    radio.addEventListener("change", updateDeliveryFields);
+  });
+
+  updateDeliveryFields();
+})();
+</script>
+
 
 <p class="notice">
   Przy zamówieniu wyłącznie produktów cyfrowych dostawa jest bezpłatna.
