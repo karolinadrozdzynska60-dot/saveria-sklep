@@ -807,6 +807,7 @@ discountForm.addEventListener("submit", async (event) => {
         addDetail(delivery, "Kod pocztowy", order.delivery_postcode);
         addDetail(delivery, "Miasto", order.delivery_city);
         addDetail(delivery, "Punkt odbioru", order.pickup_point);
+        addDetail(delivery, "Uwagi do zamówienia", order.notes);
         addDetail(delivery, "Produkty", money(order.subtotal));
         addDetail(delivery, "Dostawa", money(order.shipping_fee));
 
